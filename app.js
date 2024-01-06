@@ -1,12 +1,17 @@
-const urbanCtrl = require('./models/urban')
+const express = require('express')
+const { getRandomWord, define } = require('./models/urbanModel')
 
-const init = async () => {
-    const solution = await urbanCtrl.getRandomWord(500, 5)
-    console.log (solution)
+// app setup
+const app = express()
+app.set('view engine', 'pug')
+app.use(express.static('public'))
 
-    const define = await urbanCtrl.define(solution.word)
-    console.log(define)
+// routes
+const appRoutes = require('./routes/appRoutes')
+app.use('/', appRoutes)
 
-}
-
-init()
+const port = 3000
+app.listen(port, async () => {
+    global.word = await define('loner ')
+    console.log(`Example app listening on port ${port}`)
+})
