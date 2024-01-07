@@ -7,11 +7,14 @@ app.set('view engine', 'pug')
 app.use(express.static('public'))
 
 // routes
+const apiRoutes = require('./routes/apiRoutes')
 const appRoutes = require('./routes/appRoutes')
+
+app.use('/api', apiRoutes)
 app.use('/', appRoutes)
 
 const port = 3000
 app.listen(port, async () => {
-    global.word = await define('loner ')
+    global.solution = await define('loner')
     console.log(`Example app listening on port ${port}`)
 })

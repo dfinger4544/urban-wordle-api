@@ -2,11 +2,33 @@ const axios = require('axios')
 const url = 'http://api.urbandictionary.com/v0'
 
 
-module.exports.exists = async (winner) => {
-    const endpoint = url + `/define?term=${winner}`
+module.exports.score = async (word) => {
+    const endpoint = url + `/define?term=${word}`
     const defintion = (await axios.get(endpoint)).data.list
-    
-    return defintion.length ? true : false
+
+    const isWord = defintion.length ? true : false, result = [], solution = global.solution.word.toUpperCase(), checked = {}
+    for (let i = 0; i < word.length; i++) {
+        const letter = word[i]
+        let score = 0
+
+        if (!checked[letter]) checked[letter] = 1
+        else checked[letter]++
+
+        if (letter === solution[i]) score += 2
+        else if (solution.includes(letter) && checked[letter] !== 2) score += 1
+
+        result.push({
+            letter,
+            score
+        })
+    }
+
+    // return if its a word and the placement of letter scores
+    return {
+        isWord,
+        defintion,
+        result
+    }
 }
 
 module.exports.define = async (winner) => {
@@ -22,7 +44,6 @@ module.exports.getRandomWord = async (rating_threshold, length) => {
     let list, winner
     while (!winner) {
         const response = (await axios.get(endpoint))
-        //console.log(response)
 
         list = response.data.list.sort((a, b) => {
             a.rating = (a.thumbs_up + a.thumbs_down) + (a.thumbs_up - a.thumbs_down)
@@ -34,7 +55,6 @@ module.exports.getRandomWord = async (rating_threshold, length) => {
         }) // sort but thumbs up - down
         .filter(record => record.rating >= rating_threshold && !record.word.trim().includes(' ')) // remove winners that are phrases
 
-        console.log({list: response.data.list.length, winner})
         winner = (length ? list.find(record => record.word.length === length) : list[0])
     }
 
@@ -46,4 +66,8 @@ module.exports.getRandomWord = async (rating_threshold, length) => {
         word: solution.word,
         hint: solution.hint
     }
+}
+
+module.exports.getTodaysWord = () => {
+    return global.solution
 }
