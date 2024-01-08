@@ -57,7 +57,8 @@ $(document).on('keyup', async function(e) {
 
     }
     // add letter to current row, first empty box if A-Z
-    else if (e.key.toUpperCase().match('^[\wA-Z]$')) {
+    //else if (e.key.toUpperCase().match('^[\wA-Z]$')) {
+    else if (e.key.length === 1) {
         const first_box = $($(dom.empty_boxes)[0])
         first_box.toggleClass('empty').html(`<label>${e.key.toUpperCase()}</label>`)
     }
