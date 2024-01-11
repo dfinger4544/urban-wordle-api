@@ -1,44 +1,48 @@
-require('dotenv').config();
-const express = require('express')
+require("dotenv").config();
+const express = require("express");
 const mongoose = require("mongoose");
-const schedule = require('node-schedule');
+const schedule = require("node-schedule");
 
 // model for creating and checking todays soltion
-const Solution = require('./models/solutionModel')
+const Solution = require("./models/solutionModel");
 
 // set up todays word if it does not exist
 const checkTodaysWord = async () => {
-    const todaysWord = await Solution.getTodaysWord()
-    if (!todaysWord) await Solution.setTodaysWord()
-}
+  // get todays word if it exist, else set todays word (and catchup if there are no records for the last 1 - 7 days)
+  const todaysWord = await Solution.getTodaysWord();
+  if (!todaysWord) await Solution.setTodaysWord(7); // will try to grab the last five days of words (incase any are missing)
+
+  const total_words = await Solution.countDocuments();
+  console.log(`There are ${total_words} words in the database`);
+};
 // creates a new word every day at midnight
-schedule.scheduleJob('0 0 0 * * *', checkTodaysWord);
+schedule.scheduleJob("0 0 0 * * *", checkTodaysWord);
 
 // app setup
-const app = express()
-app.set('view engine', 'pug')
-app.use(express.static('public'))
+const app = express();
+app.set("view engine", "pug");
+app.use(express.static("public"));
 app.use(express.json());
 
 // routes
-const apiRoutes = require('./routes/apiRoutes')
-const appRoutes = require('./routes/appRoutes')
+const apiRoutes = require("./routes/apiRoutes");
+const appRoutes = require("./routes/appRoutes");
 
-app.use('/api', apiRoutes)
-app.use('/', appRoutes)
+app.use("/api", apiRoutes);
+app.use("/", appRoutes);
 
-const port = 3000
+const port = 3000;
 mongoose
-.connect(process.env.MONGODB_URI)
-.then(async result => {
+  .connect(process.env.MONGODB_URI)
+  .then(async (result) => {
     // manually run check in case app was down
-    await checkTodaysWord()
+    await checkTodaysWord();
 
     // start app
     app.listen(port, async () => {
-        console.log(`App listening on port ${port}`)
+      console.log(`App listening on port ${port}`);
     });
-})
-.catch(err => {
-  console.log(err);
-});
+  })
+  .catch((err) => {
+    console.log(err);
+  });
