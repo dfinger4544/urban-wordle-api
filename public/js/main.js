@@ -1,6 +1,6 @@
 const dom = {
-    current_row: '.current',
-    row: '.content__grid__row',
+    current_word: '.current',
+    word: '.content__grid__row__word',
     current_boxes: '.current .content__grid__row__box',
     empty_boxes: '.current .empty',
     key: '.content__keyboard__key'
@@ -13,13 +13,11 @@ $(document).on('keyup', async function(e) {
             return $(this).text()
         }).get().join('')
         const response = (await axios.get(`/api/score/${guess}`)).data
-        console.log(response)
 
         // if word then score row and set next row if end score game
         if (response.isWord) {
             let full_score = 0
             response.result.forEach((obj, index) => {
-                console.log(obj)
                 const box = $($(dom.current_boxes)[index])
                 const key = $(dom.key).find(`:contains('${obj.letter}')`).parent()
 
@@ -39,10 +37,10 @@ $(document).on('keyup', async function(e) {
             })
 
             if (full_score === $(dom.current_boxes).length * 2) {
-                $(dom.current_row).removeClass('current')
+                $(dom.current_word).removeClass('current')
             } else {
                 // release and create new row
-                $(dom.current_row).removeClass('current').next(dom.row).addClass('current')
+                $(dom.current_word).removeClass('current').next(dom.word).addClass('current')
             }
         } else {
             // shake to show incorrect

@@ -44,20 +44,27 @@ body {
 .content__grid,
 .content__keyboard {
   display: flex;
-  flex-direction: column;
   justify-content: center;
   align-items: center;
   flex-grow: 1;
 }
 
-.content__grid__row {
+.content__grid__word {
+  display: flex;
+  flex-direction: column;
+}
+
+.content__grid__word__row {
   display: flex;
   justify-content: center;
   overflow: hidden;
 }
 
-.content__grid__row__box,
-.content__grid__row__space {
+.content__grid__row__word {
+  display: flex;
+}
+
+.content__grid__row__box {
   margin: 5px;
   height: 80px;
   width: 80px;
@@ -118,4 +125,8 @@ body {
 
 .wrong {
   color: red;
+}
+
+.hidden {
+  opacity: 0;
 }
