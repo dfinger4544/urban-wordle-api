@@ -1,14 +1,16 @@
 const dom = {
-    current_word: '.current',
-    word: '.content__grid__row__word',
-    current_boxes: '.current .content__grid__row__box',
-    empty_boxes: '.current .empty',
-    key: '.content__keyboard__key'
+    row: '.current_word .content__grid__word__row',
+    word: '.content__grid .content__grid__word',
+    key: '.content__keyboard__key',
+    current_word: '.current_word',
+    current_row: '.current_row',
+    current_boxes: '.current_row .content__grid__word__row__box',
+    current_empty_boxes: '.current_row .empty'
 }
 
 $(document).on('keyup', async function(e) {
     // on enter/current is full
-    if (e.keyCode === 13 && !$(dom.empty_boxes).length) {
+    if (e.keyCode === 13 && !$(dom.current_empty_boxes).length) {
         const guess = $(dom.current_boxes).map(function() {
             return $(this).text()
         }).get().join('')
@@ -36,14 +38,34 @@ $(document).on('keyup', async function(e) {
                 full_score += obj.score
             })
 
+            // if win for word (max score)
             if (full_score === $(dom.current_boxes).length * 2) {
-                $(dom.current_word).removeClass('current')
+                // has another word in phrase
+                const next_word = $(dom.word).not('.current_word').first()
+                if (next_word.length) {
+                    // remove and add current word class
+                    $(dom.current_word).removeClass('current_word')
+                    next_word.addClass('current_word')
+
+                    // remove and add current row class
+                    $(dom.current_row).removeClass('current_row')
+                    $(dom.row).first().addClass('current_row')
+                } else {
+                    // remove current row to stop game and mark success
+                    $(dom.current_row).removeClass('current_row')
+                    alert('success :)')
+                }
             } else {
-                // release and create new row
-                $(dom.current_word).removeClass('current').next(dom.word).addClass('current')
+                // if next row exist, game is still playing
+                if ($(dom.current_row).next(dom.row).length) {
+                    // remove current row and add to next row
+                    $(dom.current_row).removeClass('current_row').next(dom.row).addClass('current_row')
+                } else {
+                    alert('fail :(')
+                }
             }
         } else {
-            // shake to show incorrect
+            // shake word to indicate incorrect
             $(dom.current_row).effect('shake')
         }
     }
@@ -57,7 +79,7 @@ $(document).on('keyup', async function(e) {
     // add letter to current row, first empty box if A-Z
     //else if (e.key.toUpperCase().match('^[\wA-Z]$')) {
     else if (e.key.length === 1) {
-        const first_box = $($(dom.empty_boxes)[0])
+        const first_box = $($(dom.current_empty_boxes)[0])
         first_box.toggleClass('empty').html(`<label>${e.key.toUpperCase()}</label>`)
     }
 });

@@ -64,13 +64,13 @@ body {
   display: flex;
 }
 
-.content__grid__row__box {
+.content__grid__word__row__box {
   margin: 5px;
   height: 80px;
   width: 80px;
 }
 
-.content__grid__row__box {
+.content__grid__word__row__box {
   display: flex;
   justify-content: center;
   align-items: center;
@@ -129,4 +129,8 @@ body {
 
 .hidden {
   opacity: 0;
+}
+
+.current_row .content__grid__word__row__box {
+  border-color: rgba(175, 175, 175, 1);
 }

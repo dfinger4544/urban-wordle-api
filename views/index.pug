@@ -3,16 +3,16 @@ extends layouts/main.pug
 block content
     .content__grid
         each word, index in masked_words
-            .content__grid__word(class=`${index === 0 ? "current_word" : ""}`)
+            .content__grid__word(class=`${index === 0 ? "current_word" : ""} word_${index + 1}`)
                 - let count = 0;
                 while count < masked_words[index].length + 1
                     .content__grid__word__row(class=`${index ===0 && count === 0 ? "current_row" : ""}`)
                         for letter of word
-                            .content__grid__row__box.empty
+                            .content__grid__word__row__box.empty
                     - count++;
             if masked_words.length > 0 && index !== masked_words.length - 1
                 .content__grid__space
-                    .content__grid__row__box.hidden
+                    .content__grid__word__row__box.hidden
     .content__keyboard
         .content__keyboard__row
             .content__keyboard__key
