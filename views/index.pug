@@ -2,40 +2,20 @@ extends layouts/main.pug
 
 block content
     .content__grid
-        .content__grid__row.current
-            .content__grid__row__box.empty
-            .content__grid__row__box.empty
-            .content__grid__row__box.empty
-            .content__grid__row__box.empty
-            .content__grid__row__box.empty
         .content__grid__row
+            for letter of masked_word
+                if letter !== ' '
+                    .content__grid__row__box.empty
+                else 
+                    .content__grid__row__space
+            
+
+        
+        //.content__grid__row
             .content__grid__row__box.empty
             .content__grid__row__box.empty
             .content__grid__row__box.empty
-            .content__grid__row__box.empty
-            .content__grid__row__box.empty
-        .content__grid__row
-            .content__grid__row__box.empty
-            .content__grid__row__box.empty
-            .content__grid__row__box.empty
-            .content__grid__row__box.empty
-            .content__grid__row__box.empty
-        .content__grid__row
-            .content__grid__row__box.empty
-            .content__grid__row__box.empty
-            .content__grid__row__box.empty
-            .content__grid__row__box.empty
-            .content__grid__row__box.empty
-        .content__grid__row
-            .content__grid__row__box.empty
-            .content__grid__row__box.empty
-            .content__grid__row__box.empty
-            .content__grid__row__box.empty
-            .content__grid__row__box.empty
-        .content__grid__row
-            .content__grid__row__box.empty
-            .content__grid__row__box.empty
-            .content__grid__row__box.empty
+            .content__grid__row__space
             .content__grid__row__box.empty
             .content__grid__row__box.empty
     .content__keyboard
