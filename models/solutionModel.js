@@ -1,11 +1,7 @@
 const mongoose = require("mongoose");
 const { DateTime } = require("luxon");
 
-const puppeteer = require("puppeteer");
-const cheerio = require("cheerio");
-
-const axios = require("axios");
-const urban_api = "http://api.urbandictionary.com/v0";
+const Definition = require("./definitionModel");
 
 const Schema = mongoose.Schema;
 
@@ -20,57 +16,23 @@ const SolutionSchema = new Schema({
   example: String,
 });
 
-SolutionSchema.static("setTodaysWord", async function (catchup = 0) {
-  // Launch the browser and navigate to page
-  const browser = await puppeteer.launch({ headless: "new" });
-  const page = await browser.newPage();
-  await page.goto("https://www.urbandictionary.com/");
+// check and insert the last curated word on urban dictionary
+// if the word was used before, skip
+// choose the word of the day as todays word, if it meets criteria, else choose a random word that has not been used this month
+SolutionSchema.static("setTodaysWord", async function (max_word_length = 5) {
+  const definition = await Definition.findOne({
+    _id: "sail the seven seas",
+  });
+  definition.word = definition._id;
+  delete definition._id;
+  delete definition._v;
 
-  let words = [], // final variable of words to insert
-    list, // list of words on a single page
-    page_num = 1, // page iterator
-    $; // jquery (cheerio) page content
+  const solution = new this({
+    ...definition,
+  });
+  await solution.save();
 
-  // page loop
-  while (catchup || !list.length) {
-    // get words on page
-    $ = cheerio.load(await page.content());
-    list = $("a.word");
-
-    // reduce catchup or slice array
-    if (list.length < catchup) {
-      catchup -= list.length;
-    } else {
-      list = $("a.word").slice(0, catchup + 1);
-      catchup = 0;
-    }
-
-    // push list into array
-    words.push(...list);
-
-    // navigate to next page
-    await page.goto(`https://www.urbandictionary.com/?page=${++page_num}`);
-  }
-  await browser.close();
-  words = words.map((element) => element.children[0].data);
-  console.log(words);
-
-  // load word into db
-  for (let index = 0; index < words.length; index++) {
-    const _id = DateTime.now().plus({ days: -index }).toSQLDate();
-    const word = words[index];
-    const response = await this.define(word);
-
-    try {
-      const newSolution = new this({
-        _id,
-        ...response,
-      });
-      await newSolution.save();
-    } catch (e) {
-      console.log(`A word already exists for ${_id}`);
-    }
-  }
+  return solution;
 });
 
 SolutionSchema.static(
@@ -81,7 +43,7 @@ SolutionSchema.static(
   }
 );
 
-SolutionSchema.static("score", async function (word) {
+/* SolutionSchema.static("score", async function (word) {
   const guess = await this.define(word);
   const todaysWord = await this.getTodaysWord();
 
@@ -110,13 +72,6 @@ SolutionSchema.static("score", async function (word) {
     isWord,
     result,
   };
-});
-
-SolutionSchema.static("define", async function (word) {
-  const endpoint = urban_api + `/define?term=${word}`;
-  const defintion = (await axios.get(endpoint)).data.list[0];
-
-  return defintion;
-});
+}); */
 
 module.exports = mongoose.model("Solution", SolutionSchema);

@@ -4,16 +4,22 @@ const mongoose = require("mongoose");
 const schedule = require("node-schedule");
 
 // model for creating and checking todays soltion
+const Definition = require("./models/definitionModel");
 const Solution = require("./models/solutionModel");
 
 // set up todays word if it does not exist
 const checkTodaysWord = async () => {
-  // get todays word if it exist, else set todays word (and catchup if there are no records for the last 1 - 7 days)
-  const todaysWord = await Solution.getTodaysWord();
-  if (!todaysWord) await Solution.setTodaysWord(7); // will try to grab the last five days of words (incase any are missing)
+  // capture curated words from Urban Dictionary
+  await Definition.captureDefinitions(1); // capture # of pages
 
-  const total_words = await Solution.countDocuments();
+  // get todays word if it exist, else set todays word (and catchup if there are no records for the last 1 - 7 days)
+  await Solution.deleteMany({}); // temp until actual daily word within criteria
+  let todaysWord = await Solution.getTodaysWord();
+  if (!todaysWord) todaysWord = await Solution.setTodaysWord(); // will try to grab the last five days of words (incase any are missing)
+
+  const total_words = await Definition.countDocuments();
   console.log(`There are ${total_words} words in the database`);
+  console.log(`Todays word is ${todaysWord.word}`);
 };
 // creates a new word every day at midnight
 schedule.scheduleJob("0 0 0 * * *", checkTodaysWord);
