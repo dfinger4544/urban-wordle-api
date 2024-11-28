@@ -1,15 +1,22 @@
 const mongoose = require("mongoose");
-
+const { DateTime } = require("luxon");
 const puppeteer = require("puppeteer");
 const cheerio = require("cheerio");
-
 const axios = require("axios");
-const urban_api = "http://api.urbandictionary.com/v0";
+
+const URBAN_API = "http://api.urbandictionary.com/v0";
 
 const Schema = mongoose.Schema;
 
 const DefinitionSchema = new Schema({
-  _id: { type: String, required: true },
+  timestamp: {
+    type: Date,
+    require: true,
+  },
+  word: {
+    type: String,
+    unique: true,
+  },
   definition: String,
   example: String,
 });
@@ -17,7 +24,7 @@ const DefinitionSchema = new Schema({
 // check and insert the last curated word on urban dictionary
 // if the word was used before, skip
 // choose the word of the day as todays word, if it meets criteria, else choose a random word that has not been used this month
-DefinitionSchema.static("captureDefinitions", async function (catchup = -1) {
+DefinitionSchema.static("captureDefinitions", async function (catchup = 1) {
   // Launch the browser and navigate to UD
   const browser = await puppeteer.launch({ headless: "new" });
   const page = await browser.newPage();
@@ -30,6 +37,7 @@ DefinitionSchema.static("captureDefinitions", async function (catchup = -1) {
   await page.goto(`https://www.urbandictionary.com/?page=${page_num}`);
 
   // page loop - -1 is all words
+  let daysOld = 0;
   while (catchup && catchup !== 0) {
     console.log(`Processing page ${page_num}`);
     // get words on page
@@ -45,18 +53,19 @@ DefinitionSchema.static("captureDefinitions", async function (catchup = -1) {
       try {
         const word = words[index];
         const response = await this.define(word);
-        const _id = response.word;
 
         const newDefinition = new this({
-          _id,
+          timestamp: DateTime.now().plus({ days: daysOld }).toSQLDate(),
           ...response,
         });
 
         await newDefinition.save();
-        console.log(`${newDefinition._id} SAVED to Definitions`);
+        daysOld--;
+
+        console.log(`${newDefinition.word} SAVED to Definitions`);
       } catch (e) {
         if (e.keyValue) {
-          console.log(`${e.keyValue._id} EXISTS in Definitions`);
+          console.log(`${e.keyValue.word} EXISTS in Definitions`);
         } else {
           console.log(e);
         }
@@ -71,7 +80,7 @@ DefinitionSchema.static("captureDefinitions", async function (catchup = -1) {
 });
 
 DefinitionSchema.static("define", async function (word) {
-  const endpoint = urban_api + `/define?term=${word}`;
+  const endpoint = URBAN_API + `/define?term=${word}`;
   const defintion = (await axios.get(endpoint)).data.list[0];
 
   return defintion;

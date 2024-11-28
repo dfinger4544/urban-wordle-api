@@ -1,8 +1,13 @@
-const express = require('express')
-const router = express.Router()
+const express = require("express");
+const router = express.Router();
 
-const apiController = require('../controllers/apiController')
+const apiController = require("../controllers/apiController");
 
-router.get('/score/:word', apiController.getDefinition)
+// full unmasked definition (word, definition, example)
+router.get("/definition/:dayIncrement", apiController.getDefinition);
 
-module.exports = router
+// masked routes for game
+router.get("/definition/:dayIncrement/masked/word", apiController.getWord);
+router.get("/definition/:dayIncrement/masked/hint", apiController.getHint);
+
+module.exports = router;
