@@ -1,5 +1,6 @@
 require("dotenv").config();
 const express = require("express");
+const cors = require("cors");
 const mongoose = require("mongoose");
 const schedule = require("node-schedule");
 const { DateTime } = require("luxon");
@@ -33,6 +34,7 @@ schedule.scheduleJob("0 0 0 * * *", checkTodaysWord);
 
 // app setup
 const app = express();
+app.use(cors());
 
 // routes
 const apiRoutes = require("./routes/apiRoutes");

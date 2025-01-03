@@ -22,9 +22,30 @@ const SolutionSchema = new Schema({
 // if the word was used before, skip
 // choose the word of the day as todays word, if it meets criteria, else choose a random word that has not been used this month
 SolutionSchema.static("setTodaysWord", async function (timestamp) {
-  const definition = await Definition.exists({
+  let definition = await Definition.exists({
     timestamp,
   });
+  if (!definition)
+    definition = (
+      await Definition.aggregate([
+        {
+          $lookup: {
+            from: "solutions",
+            localField: "_id",
+            foreignField: "definition",
+            as: "s",
+          },
+        },
+        {
+          $match: {
+            "s.definition": {
+              $exists: false,
+            },
+          },
+        },
+        { $limit: 1 },
+      ])
+    )[0];
 
   const solution = new this({
     timestamp,
